@@ -9,6 +9,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.localtide.billsync.entity.TransferHistory;
 
 public interface TransferHistoryRepository extends JpaRepository<TransferHistory, Long> {
+	public Page<TransferHistory> findByBillerId(String billerId, Pageable page);
+	
+	public Page<TransferHistory> findByBillerIdAndCreatedBetween(String billerId, Date startDate, Date endDate,
+			Pageable pageRequest);
+	/*
+	
 	public Page<TransferHistory> findByCommentContainsAndBillerId(String comment, String billerId, Pageable page);
 
 	public Page<TransferHistory> findByCommentContainsAndBillerIdAndToAccount(String string, String billerId, String toAccount,
@@ -42,6 +48,6 @@ public interface TransferHistoryRepository extends JpaRepository<TransferHistory
 			Date startDate, Date endDate, Pageable pageRequest);
 	
 	public Page<TransferHistory> findByCommentContainsAndBillerIdAndRefNumAndCreatedBetween(String string, String billerId, String toAccount,
-			Date startDate, Date endDate, Pageable pageRequest);
+			Date startDate, Date endDate, Pageable pageRequest); */
 
 }

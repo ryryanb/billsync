@@ -50,6 +50,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
 @RestController
 public class AuthenticationResource {
@@ -84,7 +85,7 @@ public class AuthenticationResource {
 	private String masterOtp;
 
 	@PostMapping(path = "/api/authenticate")
-	public ResponseEntity<?> authenticate(@RequestBody UserCredential usersCredentials, HttpServletRequest request,
+	public ResponseEntity<?> authenticate(@Valid @RequestBody UserCredential usersCredentials, HttpServletRequest request,
 			HttpServletResponse response) {
 		if (usersCredentials == null) {
 			Result result = new Result();
@@ -126,7 +127,7 @@ public class AuthenticationResource {
 				//Generate OTP
 				String otp = String.valueOf(OtpUtils.getRandomNumberSixDigit());
 				request.getSession(true).setAttribute(Constants.ATTR_LOGIN_OTP, otp);
-				logger.info(user);
+
 				user.setOtp(otp);
 				user.setOtpRequestedTime(new Date());
 				sendOtp(user, otp);
@@ -159,7 +160,7 @@ public class AuthenticationResource {
 	}
 	
 	@PostMapping(path = "/api/generateotp")
-	public ResponseEntity<?> generateOtp(@RequestBody GenerateOtpRequest generateOtpRequest, HttpServletRequest request,
+	public ResponseEntity<?> generateOtp(@Valid @RequestBody GenerateOtpRequest generateOtpRequest, HttpServletRequest request,
 			HttpServletResponse response) {
 		
 		User user = userService.getUserByLogin(generateOtpRequest.getUserName());
@@ -169,11 +170,9 @@ public class AuthenticationResource {
 		try {
 			   
 				String otp = String.valueOf(OtpUtils.getRandomNumberSixDigit());
-				logger.info("otp generated:" + otp);
 				request.getSession(true).setAttribute(Constants.ATTR_LOGIN_OTP, otp);
 				user.setOtp(otp);
 				user.setOtpRequestedTime(new Date());
-				logger.info(user);
 				sendOtp(user, otp);
 				Calendar calendar = Calendar.getInstance();
 				int expiryTime = 5; // to be used from property table.
@@ -196,7 +195,7 @@ public class AuthenticationResource {
 	}
 	
 	@PostMapping(path = "/api/verifyotp")
-	public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest verifyOtpRequest, HttpServletRequest request,
+	public ResponseEntity<?> verifyOtp(@Valid @RequestBody VerifyOtpRequest verifyOtpRequest, HttpServletRequest request,
 			HttpServletResponse response) {
 		//String masterOtp = propertiesRepository.findByPropertyName("masterOtp").getPropertyValue();
 		logger.debug("start method: verifyOtp");
@@ -204,8 +203,8 @@ public class AuthenticationResource {
 		User user = userService.getUserByLogin(verifyOtpRequest.getUserName());
 
 		String sessionOtp = user.getOtp();
-		logger.info("otp from request" + verifyOtpRequest.getOtp());
-		logger.info("sessionOtp" + sessionOtp);		
+		//logger.info("otp from request" + verifyOtpRequest.getOtp());
+		//logger.info("sessionOtp" + sessionOtp);		
 
 		Result result = new Result();		
 
@@ -226,12 +225,14 @@ public class AuthenticationResource {
 			        .claim("IP", deviceIp)
 			        .setNotBefore(currentDate)
 			        .setExpiration(expiryDate)
-			        .signWith(SignatureAlgorithm.HS256, encodeBase64URL(SecurityUtil.JWT_SECRET))
+			        .signWith(SignatureAlgorithm.HS256, SecurityUtil.JWT_SECRET)
 			        .compact();
-
+			
 			response.addHeader(SecurityUtil.HEADER_STRING, SecurityUtil.TOKEN_PREFIX + " " + token);			
 			userInfo.setToken(token); 			
-
+			logger.info(SecurityUtil.JWT_SECRET.length() +  SecurityUtil.JWT_SECRET);
+			String actualToken = token;
+			logger.info(actualToken.length() + actualToken);
 			result.setMessage("Login OTP validated successfully.");
 			result.setCode(200);
 			result.setDetails(userInfo);
@@ -507,9 +508,9 @@ public class AuthenticationResource {
 				Properties otpConfigProperty = null;
 				try {
 					otpConfigProperty = propertiesRepository.findByPropertyName("otpSendMedium");
-				logger.info("otpConfigProperty" + otpConfigProperty);
+				logger.debug("otpConfigProperty" + otpConfigProperty);
 				} catch (Exception ex) {
-					logger.info("otpConfigProperty set to default bothe email and phone");
+					logger.debug("otpConfigProperty set to default bothe email and phone");
 				}
 				if(otpConfigProperty != null) {
 					String otpMode = otpConfigProperty.getPropertyValue() != null ? otpConfigProperty.getPropertyValue() : "2";

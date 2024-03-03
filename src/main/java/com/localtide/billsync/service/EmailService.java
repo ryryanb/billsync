@@ -18,7 +18,7 @@ import jakarta.mail.internet.MimeMessage;
 public class EmailService {
 	protected final Log logger = LogFactory.getLog(getClass());
 	
-
+	@Autowired
 	private JavaMailSender javaMailSender;
 	
 	@Autowired

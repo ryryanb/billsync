@@ -29,9 +29,10 @@ public class UserService {
 	public User getCurrentUser() {
 		if (SecurityContextHolder.getContext().getAuthentication() == null
 				|| SecurityContextHolder.getContext().getAuthentication().getPrincipal().equals("anonymousUser")) {
+			logger.debug("security context does not exist");
 			return null;
 		}
-
+        logger.debug(SecurityContextHolder.getContext());
 		SecurityUser user = (SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		return user.getUser();
 	}

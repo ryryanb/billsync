@@ -23,33 +23,35 @@ public class SecurityConfig {
 	    }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .cors().and()
-            .csrf().disable()
-            .authorizeRequests()
-                .requestMatchers("/api/authenticate").permitAll()
-                .requestMatchers("/api/user/enroll").permitAll()
-                .requestMatchers("/api/signup").permitAll()
-                .requestMatchers("/api/forgotPassword").permitAll()
-                .requestMatchers("/api/resetPassword").permitAll()
-                .requestMatchers("/api/verifyotp").permitAll()
-                .requestMatchers("/api/generateotp").permitAll()
-                .requestMatchers("/api/[a-zA-Z0-9/?=&-_]+").authenticated()
-                .requestMatchers("/api/v2/api-docs").permitAll()
-                .requestMatchers("/api/swagger-ui/").permitAll()
-                .and()
-            .formLogin()
-                .and()
-            .logout()
-                .and()
-            .addFilterBefore(new JWTAuthenticationProcessingFilter(userDetailsService), BasicAuthenticationFilter.class);
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	    http
+	    .addFilterBefore(new JWTAuthenticationProcessingFilter(userDetailsService), BasicAuthenticationFilter.class)
+	    .headers()
+	    .and()
+	        .cors().and()
+	        .csrf().disable()
+	        .authorizeRequests()
+	        .requestMatchers("/public/**", "/swagger-ui.html", "/v2/api-docs", "/swagger-resources/**", "/webjars/**").permitAll()
+	            .requestMatchers("/api/authenticate").permitAll()
+	            .requestMatchers("/api/user/enroll").permitAll()
+	            .requestMatchers("/api/signup").permitAll()
+	            .requestMatchers("/api/forgotPassword").permitAll()
+	            .requestMatchers("/api/resetPassword").permitAll()
+	            .requestMatchers("/api/verifyotp").permitAll()
+	            .requestMatchers("/api/generateotp").permitAll()
+	            .requestMatchers("/api/[a-zA-Z0-9/?=&-_]+").authenticated()
+	            .requestMatchers("/v2/api-docs").permitAll()
+	            .requestMatchers("/swagger-ui/").permitAll()
+	            .and()
+	        .formLogin()
+	            .and()
+	        .logout();
+	          //  .and()
+	       
+	       
+	
+	    return http.build();
+	}
 
-        return http.build();
-    }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/resources/**");
-    }
 }
